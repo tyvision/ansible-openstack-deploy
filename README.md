@@ -1,1 +1,3 @@
-# Ansible openstack \r\n docs will be soon
+# Ansible openstack 
+
+docs will be soon
