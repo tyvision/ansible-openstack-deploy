@@ -15,3 +15,8 @@
 - name: restart apache2
   service: name=apache2 state=restarted
   become: yes
+
+- name: flush privileges
+  command: 'mysql -ne "FLUSH PRIVILEGES"'
+  changed_when: False
+  become: yes 
