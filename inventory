@@ -1,0 +1,5 @@
+[openstack_controller]
+controller.openstack.local slave_iface_ip_addr=10.0.0.11
+
+[openstack_compute]
+compute1.openstack.local slave_iface_ip_addr=10.0.0.12

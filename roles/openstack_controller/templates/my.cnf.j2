@@ -1,0 +1,4 @@
+[client]
+user=root
+password={{ db_root_password | mandatory }}
+host={{ hostvars[ansible_host].slave_iface_ip_addr }}

@@ -1,0 +1,4 @@
+- name: configure apache2
+  template: src=apache2.conf.j2 dest=/etc/apache2/apache2.conf backup=yes
+  notify: restart apache2
+  become: yes

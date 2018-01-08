@@ -1,0 +1,10 @@
+---
+# tasks file for openstack_nova
+- name: install NTP
+  apt: name=chrony state=latest
+  become: yes
+
+- name: configure NTP
+  template: src=chrony.conf.j2 dest=/etc/chrony/chrony.conf
+  become: yes
+  notify: restart chrony

@@ -1,0 +1,12 @@
+---
+# handlers file for host_prepare
+
+# -------- REBOOT PC SECTION ----------------
+# apply changes
+- name: restart server
+  shell: sleep 2 && shutdown -r now
+  async: 1
+  poll: 0
+  become: yes
+  become_method: sudo
+  ignore_errors: true

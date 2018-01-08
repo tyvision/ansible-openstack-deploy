@@ -1,0 +1,34 @@
+# {{ ansible_managed }}
+
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+
+auto lo
+iface lo inet loopback
+
+
+# The primary network interface
+
+allow-hotplug {{ ansible_default_ipv4.interface }}
+iface {{ ansible_default_ipv4.interface }} inet dhcp
+
+
+{% if ansible_interfaces|length > 2 %}
+# This interface is for LAN with gw
+#auto ens8
+iface ens8 inet static
+	address {{ hostvars[ansible_host].slave_iface_ip_addr }}
+	netmask {{ lan_netmask }}
+	# gateway {{ lan_gateway }}
+	# network {{ lan_network }}
+	# up ip r a 10.0.0.0/24 dev ens8
+	# down ip r d 10.0.0.0/24 dev ens8 
+{% endif %}
+
+
+
+dns-nameservers 8.8.8.8 8.8.4.4

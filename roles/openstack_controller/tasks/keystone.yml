@@ -1,0 +1,25 @@
+- name: install keystone
+  apt: name=keystone state=latest
+  become: yes
+
+- name: configure keystone
+  template: src=keystone.conf.j2 dest=/etc/keystone/keystone.conf
+  become: yes
+
+- name: fulfill identify DB
+  command: keystone-manage db_sync
+  become: yes
+  become_user: "{{ keystone.db_user }}"
+  become_flags: '-s /bin/sh'
+  become_method: su
+
+- name: fernet repo initialize
+  command: keystone-manage  {{ item }} --keystone-user {{ keystone.db_user }} --keystone-group {{ keystone.group }}
+  with_items:
+    - "fernet_setup"
+    - "credential_setup"
+  become: yes
+
+- name: bootstrap the identity service
+  command: keystone-manage bootstrap --bootstrap-password {{ ADMIN_PASS }} --bootstrap-admin-url http://{{ hostvars[ansible_host].inventory_hostname }}:35357/v3/ --bootstrap-internal-url http://{{ hostvars[ansible_host].inventory_hostname }}:5000/v3/ --bootstrap-public-url http://{{ hostvars[ansible_host].inventory_hostname }}:5000/v3/ --bootstrap-region-id RegionOne
+  become: yes

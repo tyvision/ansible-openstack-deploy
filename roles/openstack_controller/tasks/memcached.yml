@@ -1,0 +1,16 @@
+- name: install memcached
+  apt: name="{{ item }}" state=latest
+  with_items:
+    - memcached
+    - python-memcache
+  become: yes
+
+- name: reconfigure memcached
+  template: src=memcached.conf.j2 dest=/etc/memcached.conf
+  become: yes
+  notify: restart memcached
+
+# - name: reconfigure memcached
+#   command: sed -i -- 's/-l 127.0.0.1/-l {{ hostvars[ansible_host].slave_iface_ip_addr }}/g' /etc/memcached.conf
+#   become: yes
+#   notify: restart memcached

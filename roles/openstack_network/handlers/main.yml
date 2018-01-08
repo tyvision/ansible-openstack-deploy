@@ -1,0 +1,5 @@
+---
+# handlers file for openstack_network
+- name: restart networking
+  become: yes
+  service: name=networking state=restarted

@@ -1,0 +1,20 @@
+---
+# tasks file for openstack_controller
+- name: install NTP
+  apt: name=chrony state=latest
+  become: yes
+
+- name: configure NTP
+  template: src=chrony.conf.j2 dest=/etc/chrony/chrony.conf
+  become: yes
+  notify: restart chrony
+
+- include_tasks: mariadb.yml
+
+- include_tasks: rabbitmq.yml
+
+- include_tasks: memcached.yml
+
+- include_tasks: keystone.yml
+
+- include_tasks: apache2.yml

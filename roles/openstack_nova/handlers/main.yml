@@ -1,0 +1,5 @@
+---
+# handlers file for openstack_nova
+- name: restart chrony
+  service: name=chrony state=restarted
+  become: yes

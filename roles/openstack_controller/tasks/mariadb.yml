@@ -1,0 +1,97 @@
+#---------------------------------------
+# MariaDB installation and configuration 
+# tasks file
+#---------------------------------------
+
+- name: install maria-db and python 
+  apt: 
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - mariadb-server 
+    - python-pymysql
+    - libmariadbclient-dev
+    - python-dev
+    - python-mysqldb
+    - mysql-client
+  become: yes
+
+- name: Install the Python MySQLB module
+  pip: name=MySQL-python
+
+- name: configure maria-db
+  template:
+    src: 99-openstack.cnf.j2
+    dest: /etc/mysql/mariadb.conf.d/99-openstack.cnf
+  become: yes
+  notify: restart mariadb
+
+- name: Add .my.cnf
+  template: src=my.cnf.j2 dest=~/.my.cnf mode=0600
+
+- name: set root password
+  mysql_user: name=root host={{ hostvars[ansible_host].inventory_hostname }} password={{ db_root_password }} state=present
+  become: yes
+
+- name: Reload privilege tables
+  command: 'mysql -ne "{{ item }}"'
+  with_items:
+    - FLUSH PRIVILEGES
+  changed_when: False
+  become: yes  
+  
+- name: Remove anonymous users
+  command: 'mysql -ne "{{ item }}"'
+  with_items:
+    - DELETE FROM mysql.user WHERE User=''
+  become: yes
+  changed_when: False
+
+# - name: Disallow root login remotely
+#   command: 'mysql -ne "{{ item }}"'
+#   with_items:
+#     - DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1', '{{ hostvars[ansible_host].slave_iface_ip_addr }}' )
+#   changed_when: False
+#   become: yes
+
+# TODO!!! Hardcoded IP in playbook}
+- name: Disallow root login remotely
+  command: 'mysql -ne "{{ item }}"'
+  with_items:
+    -  DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1', '10.0.0.11')
+  changed_when: False
+  become: yes
+
+- name: Remove test database and access to it
+  command: 'mysql -ne "{{ item }}"'
+  with_items:
+    - DROP DATABASE test
+    - DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'
+  changed_when: False
+  ignore_errors: True
+  become: yes
+
+- name: Reload privilege tables
+  command: 'mysql -ne "{{ item }}"'
+  with_items:
+    - FLUSH PRIVILEGES
+  changed_when: False
+  become: yes
+  notify: restart mariadb
+
+  #----------------------------------------
+  # KEYSTONE PREPARATION
+
+- name: create db keystone
+  mysql_db: 
+    name: "{{ keystone.db_name }}"
+    state: present
+  become: yes
+
+- name: set privileges on keystone database
+  command: 'mysql -ne "{{ item }}"'
+  with_items: 
+    - GRANT ALL PRIVILEGES ON "{{ keystone.db_name }}".* TO '{{ keystone.db_user }}'@'localhost' IDENTIFIED BY '{{ KEYSTONE_DBPASS }}';
+    - GRANT ALL PRIVILEGES ON "{{ keystone.db_name }}".* TO '{{ keystone.db_user }}'@'%' IDENTIFIED BY '{{ KEYSTONE_DBPASS }}';
+  changed_when: False
+  become: yes

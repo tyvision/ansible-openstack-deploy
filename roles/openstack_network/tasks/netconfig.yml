@@ -1,0 +1,19 @@
+# tasks for network setup
+- name: etc/network/interfaces setup
+  template: 
+    src: interfaces.j2 
+    dest: /etc/network/interfaces
+  become: yes
+  notify: restart networking
+
+- name: set default gw (if not set)
+  command: ip route add default via {{ansible_default_ipv4.gateway}} dev {{ansible_default_ipv4.interface}}
+  become: yes
+  ignore_errors: true
+  
+- name: /etc/hosts setup
+  template: 
+    src: etc_hosts.j2 
+    dest: /etc/hosts
+    backup: yes
+  become: yes
